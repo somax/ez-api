@@ -11,16 +11,16 @@ const router = express.Router()
 
 const DB_URI = process.env.DB_URI || 'mongodb://localhost:27017/test'
 const READONLY_MODE = process.env.READONLY_MODE !== 'false' || true
+const API_VERSION = process.env.API_VERSION || 'v1'
 
 mongoose.connect(DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
 
 app.use(bodyParser.json())
 app.use(methodOverride())
 
-
 let options = {
     prefix: '/api',
-    version: '/v1', // /api/v1/xxx
+    version: `/${API_VERSION}`, // /api/v1/xxx
     totalCountHeader: true, // X-Total-Count: 999
     private: [], //
     protected: ['__v'],
@@ -81,15 +81,16 @@ app.use((req, res, next)=>{
     }
 })
 
+// TODO schema 存储支持不通版本共存
 let schemaSchema = {
     "name": "__schema__",
     "collection_name": "__schema__",
     "properties": {
         "name": {
             "type": "String",
-            "unique": true,
             "required": true
         },
+        "version":"String",
         "collection_name": {
             "type": "String"
         },
@@ -98,7 +99,15 @@ let schemaSchema = {
         }
     }
 }
-let __schema__ = mongoose.model(schemaSchema.name, new mongoose.Schema(schemaSchema.properties), schemaSchema.collection_name)
+let mongoSchema = new mongoose.Schema(schemaSchema.properties)
+mongoSchema.index({
+    name: 1,
+    version: 1
+},{ 
+    unique:true
+})
+
+let __schema__ = mongoose.model(schemaSchema.name, mongoSchema, schemaSchema.collection_name)
 
 let _schema_serve = restify.serve(
     router,
@@ -106,7 +115,7 @@ let _schema_serve = restify.serve(
 )
 console.log(_schema_serve);
 
-__schema__.find({}, (err, schemas) => {
+__schema__.find({version: API_VERSION}, (err, schemas) => {
     // schema 转换工具 https://transform.tools/json-to-mongoose
     // const schemas = [
     //     schemaSchema,
@@ -160,7 +169,7 @@ function init(schemas) {
 
     app.get('/__reset__', (req, res, next) => {
         res.send('reseting...')
-        process.exit(1)
+        process.exit(0)
     })
 
     app.use(router)
