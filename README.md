@@ -9,6 +9,7 @@
 - `DB_URI` -- MongoDB 连接字符串, 默认: `mongodb://localhost:27017/test`
 - `READONLY_MODE` -- 只读模式, 默认为 `true`，仅当值为 `"false"` 时才取消只读模式，任何其他值都定义为 `true`。
 - `API_VERSION` -- 接口版本, 默认为 `v1` , 与接口 uri 中版本号对应
+- `DEFAULT_LIMIT` -- 默认单次最大返回数
 
 ### Docker
 

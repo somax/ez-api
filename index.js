@@ -12,6 +12,7 @@ const router = express.Router()
 const DB_URI = process.env.DB_URI || 'mongodb://localhost:27017/test'
 const READONLY_MODE = process.env.READONLY_MODE !== 'false' || true
 const API_VERSION = process.env.API_VERSION || 'v1'
+const DEFAULT_LIMIT =  +process.env.DEFAULT_LIMIT || 100
 
 mongoose.connect(DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
 
@@ -24,7 +25,7 @@ let options = {
     totalCountHeader: true, // X-Total-Count: 999
     private: [], //
     protected: ['__v'],
-    limit: 10,
+    limit: DEFAULT_LIMIT,
     preMiddleware: (req, res, next) => {
         console.log('inject log:', req.method, req.url);
         next()
