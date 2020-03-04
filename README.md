@@ -72,3 +72,89 @@ GET http://host:port/__reset__
 ```
 
 ⚠️注意: 重启依赖于服务守护程序, 当使用容器运行时需要加上 `--restart always` 参数
+
+
+## 接口调用方法
+
+> 详情查看 [express-restify-mongoose 文档](https://florianholzapfel.github.io/express-restify-mongoose/#querying) 
+
+> 查询语句支持参数包含：`sort`, `skip`, `limit`, `query`, `select` 以及 `distinct` 等完整的 mongoose 方法
+
+> 参数值如果是对象或者数组必须符合 JSON 规范
+
+### Sort 排序
+
+```js
+// 按 name 正排序
+GET /Customer?sort=name
+GET /Customer?sort={"name":1}
+
+// 按 name 倒排序
+GET /Customer?sort=-name
+GET /Customer?sort={"name":0}
+
+// 多个字段排序
+GET /Customer?sort=name,age
+```
+
+### 分页
+
+```js
+// 跳过 10 条
+GET /Customer?skip=10
+// 每页显示十条,
+GET /Customer?limit=10
+```
+> 注意 limit 如果未指定, 或者为值为0, 或者大于服务器默认值, 则按服务器默认设置数量返回
+> 服务端默认值为 100, 可以通过环境变量 `DEFAULT_LIMIT` 改变默认限制
+
+### Query 查询
+
+> 支持的操作符包含： `$regex`、`$gt`、`$gte`、`$lt`、`$lte`、`$ne` 等等
+
+```js
+// 查询 name 为 Bob
+GET /Customer?query={"name":"Bob"}
+
+// 正则表达式查询
+GET /Customer?query={"name":{"$regex":"^(Bob)"}}
+
+// 查询 age 大于 12
+GET /Customer?query={"age":{"$gt":12}}
+
+// 查询 age 大于等于 12
+GET /Customer?query={"age":{"$gte":12}}
+
+// 查询 age 小于 12
+GET /Customer?query={"age":{"$lt":12}}
+
+// 查询 age 小于等于 12
+GET /Customer?query={"age":{"$lte":12}}
+
+// 查询 age 不等于 12
+GET /Customer?query={"age":{"$ne":12}}
+```
+
+### Select 选择器
+
+> 仅返回指定字段
+
+```js
+// 仅返回 name 及 _id 字段
+GET /Customer?select=name
+GET /Customer?select={"name":1}
+
+// 返回多个字段
+GET /Customer?select=name,title
+
+// 排除 name 字段
+GET /Customer?select=-name
+GET /Customer?select={"name":0}
+```
+
+### Distinct 去重
+
+```js
+// 返回去重后的 name 的数组
+GET /Customer?distinct=name
+```
