@@ -1,6 +1,6 @@
 {
   "name": "ez-api",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "快速构建针对 MongoDB 的 Restful API",
   "main": "index.js",
   "scripts": {

@@ -18,6 +18,7 @@ mongoose.connect(DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
 
 app.use(bodyParser.json())
 app.use(methodOverride())
+app.use('/admin',express.static('public'))
 
 let options = {
     prefix: '/api',
@@ -75,8 +76,9 @@ app.use((req, res, next)=>{
         console.log(req.path,req.query.__confirm__, _regexp.test(req.path));
         if(!_regexp.test(req.path)){
             res.status(400).json({message:'DELETE /api/v1/<name>?__confirm__=<name>'})
+        }else{
+            next()
         }
-        next()
     }else{
         next()
     }
@@ -177,7 +179,7 @@ function init(schemas) {
 
     // if not match any router...
     app.use((req, res, next) => {
-        res.status(404).send({ msg: 'Not find.' });
+        res.status(404).send({ message: 'Not find.' });
     });
 
 

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EZ-API Admin</title>
+    <style>
+        #schema {
+            width: 100%;
+            height: 300px;
+            overflow: auto;
+            border: 1px solid #dadada;
+            background-color: #f1f0f0;
+        }
+        #new-schema{
+            width: 100%;
+            height: 300px;
+        }
+        #id{
+            width: 100%;
+        }
+        button {
+            padding: 5px 10px;
+        }
+        input{
+            padding: 5px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Hello EZ-API.</h1>
+    <h2>Schema:</h2>
+    <button onclick="loadSchema()">Refresh</button>
+    <pre id="schema"></pre>
+
+    <input type="text" id="id" placeholder="请输入id">
+    <textarea id="new-schema">
+[{
+    "name": "demo",
+    "version": "v1",
+    "properties": {
+        "foo": {
+        "type": "String",
+        "required": true
+        },
+        "bar": {
+        "type": "String"
+        }
+    }
+},
+{
+    "name": "grid",
+    "version": "v1",
+    "collection_name": "wgh",
+    "properties": {
+        "taskId": {
+            "type": "String"
+        },
+        "description": {
+            "type": "String",
+            "access": "protected"
+        }
+    }
+}]
+    </textarea>
+    <button onclick="addSchema()">Add</button>
+    <button onclick="updateSchema()">Update</button>
+    <button onclick="removeSchema()">Remove</button>
+
+    <script>
+        // todo 接口中的版本号如何从后台取到?
+        const URL = "/api/v1/__schema__"
+        function loadSchema() {
+            fetch(URL)
+                .then(res => res.json())
+                .then(
+                    res =>{
+                        document.querySelector("#schema").innerHTML = JSON.stringify(res, null,2)
+                    }
+                );
+        }
+        function addSchema(){
+            let _schemaStr = document.querySelector("#new-schema").value
+            console.log(_schemaStr);
+            fetch(URL, {
+                    method: 'post',
+                    headers:{'content-type':'application/json'},
+                    body: _schemaStr
+                })
+                .then(res => res.json())
+                .then(
+                    res =>{
+                        console.log(res);
+                        alert(JSON.stringify(res, null, 2))
+                        loadSchema()
+                    }
+                );
+        }
+        async function updateSchema(){
+            let _id = document.querySelector("#id").value
+            if(!_id) {
+                alert('请输入 id')
+                return
+            }
+            let _schemaStr = document.querySelector("#new-schema").value
+            fetch(`${URL}/${_id}?__confirm__=${_id}`, {
+                    method: 'post',
+                    headers:{'content-type':'application/json'},
+                    body: _schemaStr
+                })
+                .then(
+                    res =>{
+                        console.log(res);
+                        if(res.status == 200){
+                            loadSchema()
+                        }else{   
+                            res.text().then(alert)
+                        }
+                    }
+                );
+        }
+        function removeSchema(){
+            let _id = document.querySelector("#id").value
+            if(!_id) {
+                alert('请输入 id')
+                return
+            }
+            let _confirm = confirm(`确认删除 ${_id} 吗?`)
+            if(!_confirm) return
+            let _schemaStr = document.querySelector("#new-schema").value
+            fetch(`${URL}/${_id}?__confirm__=${_id}`, {
+                    method: 'delete',
+                    headers:{'content-type':'application/json'},
+                    body: _schemaStr
+                })
+                .then(res => {
+                    if(res.status == 204){
+                        loadSchema()
+                    }else{
+                        res.text().then(alert)
+                    }
+
+                })
+
+        }
+        
+        loadSchema()
+    </script>
+</body>
+
+</html>
