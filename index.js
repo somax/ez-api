@@ -164,12 +164,16 @@ function init(schemas) {
         let collection_name = _schema.collection_name || name
 
         console.log({ name, collection_name });
-        let r = restify.serve(
-            router,
-            mongoose.model(name, new mongoose.Schema(_schema.properties), collection_name),
-            // option
-        )
-        console.log(r);
+        try {
+            let r = restify.serve(
+                router,
+                mongoose.model(name, new mongoose.Schema(_schema.properties), collection_name),
+                // option
+            )
+            console.log(r);
+        } catch (error) {
+            console.error(error)
+        }
     })
 
     app.get('/__reset__', (req, res, next) => {
