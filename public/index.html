@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EZ-API Admin</title>
-    <style>
+    
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>EZ-API Admin</title>
+        <style>
         #schema {
             width: 100%;
             height: 300px;
@@ -22,10 +22,14 @@
         }
         button {
             padding: 5px 10px;
+            background-color: #04c5ff;
         }
         input{
             padding: 5px;
             box-sizing: border-box;
+        }
+        .red{
+            background-color: #ff2704;
         }
     </style>
 </head>
@@ -33,46 +37,41 @@
 <body>
     <h1>Hello EZ-API.</h1>
     <h2>Schema:</h2>
-    <button onclick="loadSchema()">Refresh</button>
+    <input type="text" id="url" value="/api/v1/__schema__" onchange="getUrl()">
+    <button onclick="loadSchema()">Reload Schema</button>
+    <button onclick="reset()">Reset API Server</button>
     <pre id="schema"></pre>
-
+    
     <input type="text" id="id" placeholder="请输入id">
     <textarea id="new-schema">
 [{
     "name": "demo",
     "version": "v1",
+    "collection_name": "demo_collection",
     "properties": {
         "foo": {
-        "type": "String",
-        "required": true
+            "type": "String",
+            "required": true
         },
         "bar": {
-        "type": "String"
-        }
-    }
-},
-{
-    "name": "grid",
-    "version": "v1",
-    "collection_name": "wgh",
-    "properties": {
-        "taskId": {
-            "type": "String"
-        },
-        "description": {
             "type": "String",
             "access": "protected"
-        }
+        },
+        "lookup": [{ "type": "ObjectId", "ref": "another_schema_name" }]
     }
 }]
     </textarea>
     <button onclick="addSchema()">Add</button>
     <button onclick="updateSchema()">Update</button>
-    <button onclick="removeSchema()">Remove</button>
+    <button class="red" onclick="removeSchema()">Remove</button>
 
     <script>
         // todo 接口中的版本号如何从后台取到?
-        const URL = "/api/v1/__schema__"
+        let URL
+        function getUrl(){
+            URL = document.querySelector("#url").value
+        }
+
         function loadSchema() {
             fetch(URL)
                 .then(res => res.json())
@@ -90,12 +89,14 @@
                     headers:{'content-type':'application/json'},
                     body: _schemaStr
                 })
-                .then(res => res.json())
                 .then(
                     res =>{
                         console.log(res);
-                        alert(JSON.stringify(res, null, 2))
-                        loadSchema()
+                        if(res.status == 201){
+                            loadSchema()
+                        }else{   
+                            showResponse(res)
+                        }
                     }
                 );
         }
@@ -106,8 +107,8 @@
                 return
             }
             let _schemaStr = document.querySelector("#new-schema").value
-            fetch(`${URL}/${_id}?__confirm__=${_id}`, {
-                    method: 'post',
+            fetch(`${URL}/${_id}`, {
+                    method: 'PUT',
                     headers:{'content-type':'application/json'},
                     body: _schemaStr
                 })
@@ -117,7 +118,7 @@
                         if(res.status == 200){
                             loadSchema()
                         }else{   
-                            res.text().then(alert)
+                            showResponse(res)
                         }
                     }
                 );
@@ -140,13 +141,30 @@
                     if(res.status == 204){
                         loadSchema()
                     }else{
-                        res.text().then(alert)
+                        showResponse(res)
                     }
 
                 })
 
         }
         
+        function reset(){
+            fetch('/__reset__')
+                .then(res => {
+                    if(res.status == 204){
+                        loadSchema()
+                    }else{
+                        showResponse(res)
+                    }
+
+                })
+        }
+
+        function showResponse(res){
+            res.text().then(txt=>alert(`${res.status} ${res.statusText} ${txt}`))
+        }
+
+        getUrl()
         loadSchema()
     </script>
 </body>

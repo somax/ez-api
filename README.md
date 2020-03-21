@@ -26,7 +26,7 @@ schema 存储于当前连接数据库中名为 `__schema__` 的表中，可以�
 ```json
 [
     {
-        "name": "Customer",
+        "name": "demo",
       	"version": "v1",
         "properties": {
             "name": {
@@ -39,17 +39,19 @@ schema 存储于当前连接数据库中名为 `__schema__` 的表中，可以�
         }
     },
     {
-        "name": "grid",
+        "name": "another_demo",
         "version": "v1",
-        "collection_name": "wgh",
+        "collection_name": "demo_collection",
         "properties": {
-            "taskId": {
-                "type": "String"
+            "foo": {
+                "type": "String",
+                "required": true
             },
-            "description": {
+            "bar": {
                 "type": "String",
                 "access": "protected"
-            }
+            },
+            "demos": [{ "type": "ObjectId", "ref": "demo" }]
         }
     }
 ]
@@ -133,6 +135,21 @@ GET /Customer?query={"age":{"$lte":12}}
 
 // 查询 age 不等于 12
 GET /Customer?query={"age":{"$ne":12}}
+```
+### Populate 关联查询
+用其他集合中的文档自动替换文档中指定路径.
+
+```js
+// 定义 Invoices 的 schema
+{
+  customer: [{ "type": "ObjectId" }],
+  products: [{ "type": "ObjectId" }]
+}
+
+// 支持 `create`, `read` 和 `update` 操作
+GET/POST/PUT /Invoices?populate=customer
+GET/POST/PUT /Invoices?populate={"path":"customer"}
+GET/POST/PUT /Invoices?populate=[{"path":"customer"},{"path":"products"}]
 ```
 
 ### Select 选择器
