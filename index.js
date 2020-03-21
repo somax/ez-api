@@ -10,11 +10,13 @@ const app = express()
 const router = express.Router()
 
 const DB_URI = process.env.DB_URI || 'mongodb://localhost:27017/test'
-const READONLY_MODE = process.env.READONLY_MODE !== 'false' || true
+const READONLY_MODE = process.env.READONLY_MODE === 'false' ? false : true
 const API_VERSION = process.env.API_VERSION || 'v1'
 const DEFAULT_LIMIT =  +process.env.DEFAULT_LIMIT || 100
 
 mongoose.connect(DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+
+console.log("READONLY_MODE:",READONLY_MODE);
 
 app.use(bodyParser.json())
 app.use(methodOverride())
